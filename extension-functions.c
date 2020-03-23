@@ -110,6 +110,12 @@ Original code 2006 June 05 by relicoder.
 
 //#include "config.h"
 
+#ifdef _MSC_VER
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT
+#endif
+
 #define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE 1
 #define HAVE_ACOSH 1
 #define HAVE_ASINH 1
@@ -173,49 +179,49 @@ typedef struct node_stack{
 /*
 ** creates a map given a comparison function
 */
-map map_make(cmp_func cmp);
+DLL_EXPORT map map_make(cmp_func cmp);
 
 /*
 ** inserts the element e into map m
 */
-void map_insert(map *m, void *e);
+DLL_EXPORT void map_insert(map *m, void *e);
 
 /*
 ** executes function iter over all elements in the map, in key increasing order
 */
-void map_iterate(map *m, map_iterator iter, void* p);
+DLL_EXPORT void map_iterate(map *m, map_iterator iter, void* p);
 
 /*
 ** frees all memory used by a map
 */
-void map_destroy(map *m);
+DLL_EXPORT void map_destroy(map *m);
 
 /*
 ** create a stack entry
 */
-node_stack* node_stack_create(node *n);
+DLL_EXPORT node_stack* node_stack_create(node *n);
 
 /*
 ** push a node onto the stack
 */
-void node_stack_push(node_stack **stack, node *n);
+DLL_EXPORT void node_stack_push(node_stack **stack, node *n);
 
 /*
 ** pop a value from the stack
 */
-node* node_stack_pop(node_stack **stack);
+DLL_EXPORT node* node_stack_pop(node_stack **stack);
 
 /*
 ** compares 2 integers
 ** to use with map_make
 */
-int int_cmp(const void *a, const void *b);
+DLL_EXPORT int int_cmp(const void *a, const void *b);
 
 /*
 ** compares 2 doubles
 ** to use with map_make
 */
-int double_cmp(const void *a, const void *b);
+DLL_EXPORT int double_cmp(const void *a, const void *b);
 
 #endif /* _MAP_H_ */
 
@@ -731,7 +737,7 @@ static void replicateFunc(sqlite3_context *context, int argc, sqlite3_value **ar
 ** This function is not UFT-8 safe since it only analyses a byte character.
 */
 #ifndef HAVE_ISBLANK
-int isblank(char c){
+DLL_EXPORT int isblank(char c){
   return( ' '==c || '\t'==c );
 }
 #endif
@@ -1173,7 +1179,7 @@ static void rightFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
 /*
 ** removes the whitespaces at the begining of a string.
 */
-const char* ltrim(const char* s){
+DLL_EXPORT const char* ltrim(const char* s){
   while( *s==' ' )
     ++s;
   return s;
@@ -1183,7 +1189,7 @@ const char* ltrim(const char* s){
 ** removes the whitespaces at the end of a string.
 ** !mutates the input string!
 */
-void rtrim(char* s){
+DLL_EXPORT void rtrim(char* s){
   char* ss = s+strlen(s)-1;
   while( ss>=s && *ss==' ' )
     --ss;
@@ -1727,7 +1733,7 @@ static void differenceFunc(sqlite3_context *context, int argc, sqlite3_value **a
 ** functions.  This should be the only routine in this file with
 ** external linkage.
 */
-int RegisterExtensionFunctions(sqlite3 *db){
+DLL_EXPORT int RegisterExtensionFunctions(sqlite3 *db){
   static const struct FuncDef {
      char *zName;
      signed char nArg;
@@ -1857,7 +1863,7 @@ int RegisterExtensionFunctions(sqlite3 *db){
 }
 
 #ifdef COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
-int sqlite3_extension_init(
+DLL_EXPORT int sqlite3_extension_init(
     sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi){
   SQLITE_EXTENSION_INIT2(pApi);
   RegisterExtensionFunctions(db);
@@ -1865,7 +1871,7 @@ int sqlite3_extension_init(
 }
 #endif /* COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE */
 
-map map_make(cmp_func cmp){
+DLL_EXPORT map map_make(cmp_func cmp){
   map r;
   r.cmp=cmp;
   r.base = 0;
@@ -1873,16 +1879,16 @@ map map_make(cmp_func cmp){
   return r;
 }
 
-void* xcalloc(size_t nmemb, size_t size, char* s){
+DLL_EXPORT void* xcalloc(size_t nmemb, size_t size, char* s){
   void* ret = calloc(nmemb, size);
   return ret;
 }
 
-void xfree(void* p){
+DLL_EXPORT void xfree(void* p){
   free(p);
 }
 
-void node_insert(node** n, cmp_func cmp, void *e){
+DLL_EXPORT void node_insert(node** n, cmp_func cmp, void *e){
   int c;
   node* nn;
   if(*n==0){
@@ -1904,11 +1910,11 @@ void node_insert(node** n, cmp_func cmp, void *e){
   }
 }
 
-void map_insert(map *m, void *e){
+DLL_EXPORT void map_insert(map *m, void *e){
   node_insert(&(m->base), m->cmp, e);
 }
 
-void map_iterate(map *m, map_iterator iter, void* p){
+DLL_EXPORT void map_iterate(map *m, map_iterator iter, void* p){
   node *n = m->base;
   node_stack *s = node_stack_create(n);
   node_stack **stack = &s;
@@ -1924,7 +1930,7 @@ void map_iterate(map *m, map_iterator iter, void* p){
   }
 }
 
-void map_destroy(map *m){
+DLL_EXPORT void map_destroy(map *m){
   node *n = m->base;
   node_stack *s = node_stack_create(n);
   node_stack **stack = &s;
@@ -1939,20 +1945,20 @@ void map_destroy(map *m){
   }
 }
 
-node_stack* node_stack_create(node *n){
+DLL_EXPORT node_stack* node_stack_create(node *n){
   node_stack *s = (node_stack*)calloc(1,sizeof(node_stack));
   s->n = n;
   return s;
 }
 
-void node_stack_push(node_stack **stack, node *n) {
+DLL_EXPORT void node_stack_push(node_stack **stack, node *n) {
   node_stack *s = node_stack_create(n);
   node_stack *orig = *stack;
   s->next = orig;
   *stack = s;
 }
 
-node* node_stack_pop(node_stack **stack) {
+DLL_EXPORT node* node_stack_pop(node_stack **stack) {
   node_stack *orig = *stack;
   node *ret = orig->n;
   *stack = orig->next;
@@ -1960,7 +1966,7 @@ node* node_stack_pop(node_stack **stack) {
   return ret;
 }
 
-int int_cmp(const void *a, const void *b){
+DLL_EXPORT int int_cmp(const void *a, const void *b){
   int64_t aa = *(int64_t *)(a);
   int64_t bb = *(int64_t *)(b);
   /* printf("cmp %d <=> %d\n",aa,bb); */
@@ -1972,7 +1978,7 @@ int int_cmp(const void *a, const void *b){
     return 1;
 }
 
-int double_cmp(const void *a, const void *b){
+DLL_EXPORT int double_cmp(const void *a, const void *b){
   double aa = *(double *)(a);
   double bb = *(double *)(b);
   /* printf("cmp %d <=> %d\n",aa,bb); */
@@ -1984,7 +1990,7 @@ int double_cmp(const void *a, const void *b){
     return 1;
 }
 
-void print_elem(void *e, int64_t c, void* p){
+DLL_EXPORT void print_elem(void *e, int64_t c, void* p){
   int ee = *(int*)(e);
   printf("%d => %lld\n", ee,c);
 }

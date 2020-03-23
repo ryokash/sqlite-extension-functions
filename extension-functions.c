@@ -606,6 +606,29 @@ static void atn2Func(sqlite3_context *context, int argc, sqlite3_value **argv){
   }
 }
 
+static void loganyFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
+  double r1 = 0.0;
+  double r2 = 0.0;
+
+  assert( argc==2 );
+
+  if (sqlite3_value_type(argv[0]) == SQLITE_NULL || sqlite3_value_type(argv[1]) == SQLITE_NULL) {
+    sqlite3_result_null(context);
+  } else {
+    r1 = sqlite3_value_double(argv[0]);
+    r2 = sqlite3_value_double(argv[1]);
+
+    if (r1 > 0 && r2 > 0) {
+		double v1 = log(r1);
+		double v2 = log(r2);
+	    sqlite3_result_double(context, v1/v2);
+	}
+	else
+	    sqlite3_result_null(context);
+  }
+}
+
+
 /*
 ** Implementation of the sign() function
 ** return one of 3 possibilities +1,0 or -1 when the argument is respectively
@@ -1767,7 +1790,8 @@ DLL_EXPORT int RegisterExtensionFunctions(sqlite3 *db){
     { "coth",               1, 0, SQLITE_UTF8,    0, cothFunc },
 
     { "exp",                1, 0, SQLITE_UTF8,    0, expFunc  },
-    { "log",                1, 0, SQLITE_UTF8,    0, logFunc  },
+    { "ln",                 1, 0, SQLITE_UTF8,    0, logFunc  },
+    { "log",                2, 0, SQLITE_UTF8,    0, loganyFunc  },
     { "log10",              1, 0, SQLITE_UTF8,    0, log10Func  },
     { "power",              2, 0, SQLITE_UTF8,    0, powerFunc  },
     { "sign",               1, 0, SQLITE_UTF8,    0, signFunc },

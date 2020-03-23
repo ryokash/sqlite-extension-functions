@@ -619,12 +619,12 @@ static void loganyFunc(sqlite3_context *context, int argc, sqlite3_value **argv)
     r2 = sqlite3_value_double(argv[1]);
 
     if (r1 > 0 && r2 > 0) {
-		double v1 = log(r1);
-		double v2 = log(r2);
-	    sqlite3_result_double(context, v1/v2);
-	}
-	else
-	    sqlite3_result_null(context);
+      double v1 = log(r1);
+      double v2 = log(r2);
+      sqlite3_result_double(context, v1/v2);
+    }
+    else
+      sqlite3_result_null(context);
   }
 }
 
